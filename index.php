@@ -28,8 +28,12 @@
   if(!isset($_COOKIE['username'])) {
     include 'views/index.html';
   } else {
-    include 'views/navbar.html';
-    include 'views/main.php';
+      include 'views/navbar.html';
+      if($_GET['profile']) {
+          include 'views/profile.php';
+      } else {
+          include 'views/main.php';
+      }
   }
 
 ?>

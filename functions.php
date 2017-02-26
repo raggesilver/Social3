@@ -126,6 +126,28 @@
 
         break;
 
+    case 'generateProfileFeed':
+
+        checkCookie();
+
+        $profile = $_POST['profile'];
+
+        $query = mysqli_query($conn, "SELECT * FROM posts WHERE publisher='$profile' ORDER BY id DESC");
+
+        $arr = array();
+
+        if($query->num_rows > 0) {
+
+            while($row = mysqli_fetch_array($query))
+                $arr[] = array("publisher" => $row['publisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes']);
+
+            echo json_encode($arr);
+        } else {
+            echo 'no results';
+        }
+
+        break;
+
     case 'toggleLike':
 
         checkCookie();
@@ -135,6 +157,31 @@
         $query = mysqli_query($conn, "UPDATE users SET likes=likes+1 WHERE id=$id");
 
         //Still have to remove/add the id from/to the user account
+
+        break;
+
+    case 'getProfileInfo':
+
+        checkCookie();
+
+        $profile = $_POST['profile'];
+
+        $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$profile'");
+
+        if(!$query) {
+            die('not query');
+        }
+
+        if($query->num_rows > 0) {
+            $info = mysqli_fetch_array($query);
+
+            $arr = array("username" => $info['username'], "fullname" => $info['fullname']);
+            echo json_encode($arr);
+        } else {
+            echo 'not found';
+        }
+
+
 
         break;
 

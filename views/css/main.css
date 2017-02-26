@@ -13,7 +13,7 @@ html, body {
 
 .side-menu {
     height: 100%;
-    padding: 10px 0;
+    padding: 30px 0;
 }
 
 .page {
@@ -29,6 +29,7 @@ html, body {
 .side-menu-prof-container {
     width: 100%;
     position: relative;
+    text-align: center;
 }
 
 .side-menu-profpic {
@@ -74,7 +75,7 @@ img {
 }
 
 .feed {
-    padding: 30px 10px;
+    padding: 30px 50px;
 }
 
 .write-box {

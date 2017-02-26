@@ -1,8 +1,9 @@
 <div class="page">
     <div class="container-fluid col-md-3 col-sm-3 side-menu">
         <div class="side-menu-prof-container">
-            <img class="side-menu-profpic self-profpic-sm">
+            <img class="side-menu-profpic self-profpic-sm profpic">
             <h3 class="side-menu-name self-fullname">User Name</h3>
+            <a class="side-menu-username "href="#">@username</a>
         </div>
     </div>
 
@@ -24,6 +25,7 @@
 
     <link rel="stylesheet" href="views/css/main.css">
     <script src="views/js/main.js"></script>
+    <script src="views/js/global.js"></script>
 </div>
 
 <div class="img-full">

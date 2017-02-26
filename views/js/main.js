@@ -10,6 +10,8 @@ function UrlExists(url) {
 function setUserInfo() {
     console.log('set user info, ' + fullname);
     $('.self-fullname').html(fullname);
+    $('.side-menu-username').text('@' + username);
+    $('.side-menu-username').attr('href', '/carlos/?profile=' + username);
 
     var url = (UrlExists('/carlos/users/' + username + '/profpic-small.png')) ? '/carlos/users/' + username + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
 
@@ -53,7 +55,7 @@ function makePost() {
             if (data == 'OK') {
                 var div = document.createElement('div');
                 $(div).addClass('feed-card');
-                $(div).append('<img class="post-profpic" src="' + selfpic + '">');
+                $(div).append('<img class="post-profpic profpic" src="' + selfpic + '">');
                 $(div).append('<a class="profile-link">@' + username + '</a>');
                 $(div).append('<p> - ' + 'now' + '</p>');
                 $(div).append('<div class="clear"></div>');
@@ -87,7 +89,7 @@ function generateFeed() {
 
                 var div = document.createElement('div');
                 $(div).addClass('feed-card');
-                $(div).append('<img class="post-profpic" src="' + url + '">');
+                $(div).append('<img class="post-profpic profpic" src="' + url + '">');
                 $(div).append('<a class="profile-link">@' + publisher + '</a>');
                 $(div).append('<p> - ' + postdate + '</p>');
                 $(div).append('<div class="clear"></div>');
@@ -106,38 +108,9 @@ $(function() {
 
     getUserInfo();
 
-    $(document).on('click', 'img', function() {
-        var url = $(this).attr('src');
-
-        if (url.indexOf('small') !== -1) {
-            var user = url.split('/')[3];
-            url = (UrlExists('/carlos/users/' + user + '/profpic.jpg')) ? '/carlos/users/' + user + '/profpic.jpg' : url;
-        }
-
-        $('.img-full img').attr('src', url);
-        $('.img-full').show();
-    });
-
-    $(document).on('click', '.img-full', function() {
-        $('.img-full').hide();
-    });
-
     $(document).on('click', '.publishButton', function() {
         console.log('publish');
         makePost();
-    });
-
-    $(document).on('click', '.profile-link', function() {
-        var prof = $(this).text().replace('@', '');
-        window.location = '/carlos/?profile=' + prof;
-    });
-
-    $(document).on('click', '.like-btn', function() {
-        if ($(this).hasClass('liked')) {
-            $(this).removeClass('liked');
-        } else {
-            $(this).addClass('liked');
-        }
     });
 
     $(document).on('click', '.attatchImgButton', function() {
