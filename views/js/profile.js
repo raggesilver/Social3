@@ -1,4 +1,4 @@
-var profile, username, fullname, name, surname;
+var profile, username, fullname, name, surname, totalPosts;
 
 function getParameterByName(name) {
     var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
@@ -16,6 +16,7 @@ function setProfileInfo() {
     $('.self-fullname').html(fullname);
     $('.side-menu-username').text('@' + username);
     $('.side-menu-username').attr('href', '/carlos/?profile=' + username);
+    $('.side-menu-totalposts').text(totalPosts + ' posts');
 
     var url = (UrlExists('/carlos/users/' + username + '/profpic-small.png')) ? '/carlos/users/' + username + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
 
@@ -38,6 +39,7 @@ function getProfileInfo() {
             fullname = data.fullname;
             name = data.fullname.split(' ')[0];
             surname = data.fullname.split(' ')[data.fullname.split(' ').length - 1];
+            totalPosts = data.totalPosts;
 
             setProfileInfo();
             generateFeed();
@@ -58,8 +60,16 @@ function generateFeed() {
             var json = JSON.parse(data);
             for (var post of json) {
                 var publisher = post.publisher;
-                var content = post.content;
+                var contentObj = JSON.parse(post.content);
                 var postdate = post.postdate;
+                var id = post.id;
+                var liked = post.liked;
+                var likes = post.likes;
+
+                var type = contentObj.contentType;
+                var content = contentObj.content;
+
+                var attatchments = contentObj.attatchments;
 
                 var url = (UrlExists('/carlos/users/' + publisher + '/profpic-small.png')) ? '/carlos/users/' + publisher + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
 
@@ -70,8 +80,16 @@ function generateFeed() {
                 $(div).append('<p> - ' + postdate + '</p>');
                 $(div).append('<div class="clear"></div>');
                 $(div).append('<p class="content">' + content + '</p>');
-                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                if(attatchments.length > 0) {
+                    for (var src of attatchments) {
+                        $(div).append('<img src="/carlos/posts_res/' + src + '" class="content-img">');
+                    }
+                }
+                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i><span class="post-likes"></span></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                $(div).data('id', id);
                 $('.feed').append(div);
+                if(liked) $(div).find('.like-btn').addClass('liked');
+                $(div).find('.post-likes').html((likes > 0) ? likes : '');
             }
         },
         error: function(err) {

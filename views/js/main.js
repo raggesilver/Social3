@@ -1,4 +1,4 @@
-var username, name, surname, fullname, selfpic;
+var username, name, surname, fullname, selfpic, totalPosts;
 
 function UrlExists(url) {
     var http = new XMLHttpRequest();
@@ -12,6 +12,7 @@ function setUserInfo() {
     $('.self-fullname').html(fullname);
     $('.side-menu-username').text('@' + username);
     $('.side-menu-username').attr('href', '/carlos/?profile=' + username);
+    $('.side-menu-totalposts').text(totalPosts + ' posts');
 
     var url = (UrlExists('/carlos/users/' + username + '/profpic-small.png')) ? '/carlos/users/' + username + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
 
@@ -31,6 +32,7 @@ function getUserInfo() {
             fullname = data.fullname;
             name = data.fullname.split(' ')[0];
             surname = data.fullname.split(' ')[data.fullname.split(' ').length - 1];
+            totalPosts = data.totalPosts;
 
             setUserInfo();
             generateFeed();
@@ -46,30 +48,57 @@ function makePost() {
 
     var content = $('.write-box textarea').val();
 
+    var contentType = 'text';
+
     if (!(/\S/.test(content))) return;
+
+    var mediaCount = $('.attatchFileInput').get(0).files.length;
+
+    if(mediaCount == 1) {
+        contentType = 'media';
+    } else if (mediaCount > 1) {
+        contentType = 'gallery'
+    }
+
+    var files = [];
+
+    if(mediaCount > 0) {
+        $('.preview-box span .thumb').each(function(index){
+            files.push($(this).attr('src'));
+        });
+    }
+
+    var contentObj = JSON.stringify({
+        'contentType': contentType,
+        'content': content,
+        'media': files
+    });
+
+    // alert(contentObj);
 
     $.post({
         url: '/carlos/functions.php',
-        data: 'func=post&content=' + content,
+        data: {
+            'func': 'post',
+            'content': contentObj
+        },
+        beforeSend: function(){
+            $('.publishButton').html('<i style="color:white" class="fa fa-circle-o-notch fa-spin fa-fw"></i>');
+        },
         success: function(data) {
             if (data == 'OK') {
-                var div = document.createElement('div');
-                $(div).addClass('feed-card');
-                $(div).append('<img class="post-profpic profpic" src="' + selfpic + '">');
-                $(div).append('<a class="profile-link">@' + username + '</a>');
-                $(div).append('<p> - ' + 'now' + '</p>');
-                $(div).append('<div class="clear"></div>');
-                $(div).append('<p class="content">' + content + '</p>');
-                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
-                $('.write-box').after(div);
+                location.reload();
 
-                $('.write-box textarea').val('');
             } else {
                 alert(data);
+                console.log(data);
+                $('.publishButton').html('<i class="fa fa-paper-plane" aria-hidden="true"></i>');
             }
         },
         error: function(err) {
             alert('error: ' + err);
+            console.log(err);
+            $('.publishButton').html('<i class="fa fa-paper-plane" aria-hidden="true"></i>');
         }
     });
 }
@@ -82,8 +111,16 @@ function generateFeed() {
             var json = JSON.parse(data);
             for (var post of json) {
                 var publisher = post.publisher;
-                var content = post.content;
+                var contentObj = JSON.parse(post.content);
                 var postdate = post.postdate;
+                var id = post.id;
+                var liked = post.liked;
+                var likes = post.likes;
+
+                var type = contentObj.contentType;
+                var content = contentObj.content;
+
+                var attatchments = contentObj.attatchments;
 
                 var url = (UrlExists('/carlos/users/' + publisher + '/profpic-small.png')) ? '/carlos/users/' + publisher + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
 
@@ -94,8 +131,16 @@ function generateFeed() {
                 $(div).append('<p> - ' + postdate + '</p>');
                 $(div).append('<div class="clear"></div>');
                 $(div).append('<p class="content">' + content + '</p>');
-                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                if(attatchments.length > 0) {
+                    for (var src of attatchments) {
+                        $(div).append('<img src="/carlos/posts_res/' + src + '" class="content-img">');
+                    }
+                }
+                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i> <span class="post-likes"></span></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                $(div).data('id', id);
                 $('.feed').append(div);
+                if(liked) $(div).find('.like-btn').addClass('liked');
+                $(div).find('.post-likes').html((likes > 0) ? likes : '');
             }
         },
         error: function(err) {
@@ -151,6 +196,21 @@ $(function() {
             $(this).addClass('big-font');
         } else {
             $(this).removeClass('big-font');
+        }
+    });
+
+    $(document).on('focus', '.write-box textarea', function(){
+        $('.write-box').addClass('focused');
+    });
+
+    $(document).on('click', function (e) {
+        if(!$('.write-box').hasClass('focused')) return;
+        var container = $('.write-box');
+
+        var ex = $('.img-full');
+
+        if ((!container.is(e.target) && container.has(e.target).length === 0) && (!ex.is(e.target) && ex.has(e.target).length === 0)) {
+            $('.write-box').removeClass('focused');
         }
     });
 

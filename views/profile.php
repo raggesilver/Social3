@@ -4,6 +4,7 @@
             <img class="side-menu-profpic self-profpic-sm profpic">
             <h3 class="side-menu-name self-fullname">User Name</h3>
             <a class="side-menu-username "href="#">@username</a>
+            <p class="side-menu-totalposts"></p>
         </div>
     </div>
 

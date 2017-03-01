@@ -4,6 +4,14 @@
             <img class="side-menu-profpic self-profpic-sm profpic">
             <h3 class="side-menu-name self-fullname">User Name</h3>
             <a class="side-menu-username "href="#">@username</a>
+            <p class="side-menu-totalposts"></p>
+        </div>
+
+        <div class="">
+            <ul class="side-menu-tools">
+                <li><a href="/carlos/test.php"><i class="fa fa-calendar" aria-hidden="true"></i> Calendar</a></li>
+                <li><a href="/carlos/test.php"><i class="fa fa-book" aria-hidden="true"></i> Assignments</a></li>
+            </ul>
         </div>
     </div>
 

@@ -12,18 +12,47 @@
     Error codes: 100 = function specified on POST not available, 200 = database connection error, AUTH = authentication error
   */
 
-  function checkCookie() {
-    if(!isset($_COOKIE['username'])) { echo "error:must login first"; die(); }
+  function base64ToImage($imageData)
+  {
+      $pos = explode(',', $imageData)[0];
+      $data = explode(',', $imageData)[1];
 
-    setcookie('username', $_COOKIE['username'], time() + 3600); // Add some time for the cookie
+      $type = str_replace(';base64', '', explode('/', $pos)[1]);
+
+      $filename = md5(uniqid() . rand()) . '.' . $type;
+
+      $fh = fopen('posts_res/' . $filename, 'wb');
+      stream_filter_append($fh, 'convert.base64-decode');
+
+      fwrite($fh, $data);
+
+      fclose($h);
+
+      return $filename;
   }
 
-  if(!$_POST) { echo "error"; die(); }
+  function checkCookie()
+  {
+      if (!isset($_COOKIE['username'])) {
+          echo "error:must login first";
+          die();
+      }
+
+      setcookie('username', $_COOKIE['username'], time() + 3600); // Add some time for the cookie
+  }
+
+  if (!$_POST) {
+      echo "error";
+      die();
+  }
 
   include 'db.php';
-  if(!$conn) {echo "error:200"; die();}
+  if (!$conn) {
+      echo "error:200";
+      die();
+  }
 
-  switch($_POST['func']) {
+  switch ($_POST['func']) {
 
     case 'login':
       $username = $_POST['username'];
@@ -31,15 +60,14 @@
 
       $query = $conn->query("SELECT * FROM users WHERE username='$username' AND password='$password'");
 
-      if($query->num_rows > 0) {
+      if ($query->num_rows > 0) {
+          setcookie('username', $username, time() + 3600);
 
-        setcookie('username', $username, time() + 3600);
-
-        echo "OK";
-        die();
+          echo "OK";
+          die();
       } else {
-        echo "error:AUTH, username: " . $username . ", password: " . $password;
-        die();
+          echo "error:AUTH, username: " . $username . ", password: " . $password;
+          die();
       }
 
       break;
@@ -50,15 +78,15 @@
       $email = $_POST['email'];
       $fullname = $_POST['fullname'];
 
-      $query = mysqli_query($conn, "INSERT INTO users(username, password, email, fullname) VALUES('$username', '$password', '$email', '$fullname')");
+      $query = mysqli_query($conn, "INSERT INTO users(username, password, email, fullname, likes) VALUES('$username', '$password', '$email', '$fullname', '[]')");
 
-      if($query) {
-        setcookie('username', $username, time() + 3600);
-        echo 'OK';
-        die();
+      if ($query) {
+          setcookie('username', $username, time() + 3600);
+          echo 'OK';
+          die();
       } else {
-        echo 'error ' . mysqli_error($conn);
-        die();
+          echo 'error ' . mysqli_error($conn);
+          die();
       }
 
       break;
@@ -71,14 +99,18 @@
 
         $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
 
-        if(!$query) {
+        if (!$query) {
             die('not query');
         }
 
-        if($query->num_rows > 0) {
+        if ($query->num_rows > 0) {
             $info = mysqli_fetch_array($query);
 
-            $arr = array("username" => $info['username'], "fullname" => $info['fullname']);
+            $qr = mysqli_query($conn, "SELECT * FROM posts WHERE publisher='$username'");
+
+            $totalPosts = (int) $qr->num_rows;
+
+            $arr = array("username" => $info['username'], "fullname" => $info['fullname'], "totalPosts" => $totalPosts);
             echo json_encode($arr);
         } else {
             echo 'not found';
@@ -96,7 +128,21 @@
 
         $content = $_POST['content'];
 
-        $query = mysqli_query($conn, "INSERT INTO posts(publisher, postdate, content) VALUES('$username', CURDATE(), '$content')");
+        $contentObj = (array) json_decode($_POST['content']);
+
+        $files = (array) json_decode($contentObj['media']);
+
+        $newFiles = array();
+
+        for ($i=0; $i < count($contentObj['media']); $i++) {
+            $newFiles[] = base64ToImage($contentObj['media'][$i]);
+        }
+
+        $newContentObj = array('contentType' => $contentObj['contentType'], 'content' => $contentObj['content'], 'attatchments' => $newFiles);
+
+        $newContentJSON = json_encode($newContentObj);
+
+        $query = mysqli_query($conn, "INSERT INTO posts(publisher, postdate, content) VALUES('$username', CURDATE(), '$newContentJSON')");
 
         $ans = ($query) ? 'OK' : 'FAIL ' . mysqli_error($conn);
 
@@ -114,10 +160,22 @@
 
         $arr = array();
 
-        if($query->num_rows > 0) {
+        if ($query->num_rows > 0) {
+            while ($row = mysqli_fetch_array($query)) {
 
-            while($row = mysqli_fetch_array($query))
-                $arr[] = array("publisher" => $row['publisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes']);
+                $q = mysqli_query($conn, "SELECT likes FROM users WHERE username='$username'");
+
+                $r = mysqli_fetch_array($q);
+
+                $likes = (array) json_decode($r['likes']);
+
+                $liked = false;
+
+                if(in_array($row['id'], $likes)) $liked = true;
+
+
+                $arr[] = array("publisher" => $row['publisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked);
+            }
 
             echo json_encode($arr);
         } else {
@@ -136,10 +194,23 @@
 
         $arr = array();
 
-        if($query->num_rows > 0) {
+        if ($query->num_rows > 0) {
+            while ($row = mysqli_fetch_array($query)) {
 
-            while($row = mysqli_fetch_array($query))
-                $arr[] = array("publisher" => $row['publisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes']);
+                $username = $_COOKIE['username'];
+
+                $q = mysqli_query($conn, "SELECT likes FROM users WHERE username='$username'");
+
+                $r = mysqli_fetch_array($q);
+
+                $likes = (array) json_decode($r['likes']);
+
+                $liked = false;
+
+                if(in_array($row['id'], $likes)) $liked = true;
+
+                $arr[] = array("publisher" => $row['publisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked);
+            }
 
             echo json_encode($arr);
         } else {
@@ -152,9 +223,28 @@
 
         checkCookie();
 
-        $id = $_POST['postid'];
+        $id = (int) $_POST['id'];
+        $username = $_COOKIE['username'];
 
-        $query = mysqli_query($conn, "UPDATE users SET likes=likes+1 WHERE id=$id");
+        $query = mysqli_query($conn, "SELECT likes FROM users WHERE username='$username'");
+
+        $row = mysqli_fetch_array($query);
+
+        $likes = (array) json_decode($row['likes']);
+
+        if(in_array($id, $likes)) {
+            if(($key = array_search($id, $likes)) !== false) {
+                unset($likes[$key]);
+            }
+            $lk = json_encode(array_values($likes));
+            mysqli_query($conn, "UPDATE users SET likes='$lk' WHERE username='$username'");
+            mysqli_query($conn, "UPDATE posts SET likes=likes-1 WHERE id='$id'");
+        } else {
+            array_push($likes, $id);
+            $lk = json_encode(array_values($likes));
+            mysqli_query($conn, "UPDATE users SET likes='$lk' WHERE username='$username'");
+            mysqli_query($conn, "UPDATE posts SET likes=likes+1 WHERE id='$id'");
+        }
 
         //Still have to remove/add the id from/to the user account
 
@@ -168,14 +258,18 @@
 
         $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$profile'");
 
-        if(!$query) {
+        if (!$query) {
             die('not query');
         }
 
-        if($query->num_rows > 0) {
+        if ($query->num_rows > 0) {
             $info = mysqli_fetch_array($query);
 
-            $arr = array("username" => $info['username'], "fullname" => $info['fullname']);
+            $qr = mysqli_query($conn, "SELECT * FROM posts WHERE publisher='$profile'");
+
+            $totalPosts = (int) $qr->num_rows;
+
+            $arr = array("username" => $info['username'], "fullname" => $info['fullname'], "totalPosts" => $totalPosts);
             echo json_encode($arr);
         } else {
             echo 'not found';
@@ -187,5 +281,3 @@
 
     default: echo "error:100"; die();
   }
-
-?>

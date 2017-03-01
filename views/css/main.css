@@ -84,6 +84,8 @@ img {
     box-shadow: 0 0 .2cm #454545;
     padding: 10px;
     padding-bottom: 0;
+
+    transition: .3s;
 }
 
 .write-box textarea {
@@ -146,7 +148,7 @@ a.profile-link {
 .feed-card p:first-of-type {
     margin-left: 5px;
     line-height: 50px;
-    color: lightgrey;
+    color: grey;
     float: left;
     font-size: smaller;
 }
@@ -161,6 +163,7 @@ a.profile-link {
     text-align: center;
     vertical-align: middle;
     width: 100%;
+    margin-top: 10px;
 }
 
 .write-box button.img-button, .img-button, .write-box button.img-btn {
@@ -169,7 +172,9 @@ a.profile-link {
     padding: 10px;
 }
 
-.write-box button.img-btn {color: #232323}
+.write-box button.img-btn {
+    color: #232323
+}
 
 .like-btn {
     transition: .3s;
@@ -207,8 +212,76 @@ a.profile-link {
     font-size: 16pt;
 }
 
+.side-menu-tools {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.side-menu-tools li {
+    height: 50px;
+    width: 100%;
+
+    margin: 0 20px;
+
+    line-height: 50px;
+}
+
+.side-menu-tools li a {
+    color: #232323;
+    text-decoration: none;
+
+    width: 100%;
+    height: 100%;
+    display: inline-block;
+
+    padding: 0 10%;
+}
+
+.side-menu-tools li:hover {
+    background: #E5E5E5;
+}
+
+.side-menu-name, .side-menu-username, .side-menu-totalposts {
+    display: block;
+    padding-left: calc(20px + 10%);
+    text-align: left;
+}
+
+p.content {
+    word-break: break-word;
+}
+
+.focused {
+    transform: scale(1.1);
+
+    box-shadow: 0 0 2cm #232323;
+}
+
+.content-img {
+    max-width: 100%;
+    max-height: 400px;
+}
+
+@media only screen and (max-width: 900px) {
+    .feed {
+        padding: 30px;
+    }
+}
+
 @media only screen and (max-width: 500px) {
     .side-menu {
         display: none;
+    }
+
+    .feed {
+        padding: 30px 15px;
+    }
+
+    .focused {
+        transform: scale(1);
+        width: calc(100% + 30px);
+        margin: 0 -15px;
     }
 }
