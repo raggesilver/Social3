@@ -51,4 +51,25 @@ $(function(){
             error: function(err) {alert('error: ' + err);}
         });
     });
+
+    $(document).on('click', '.share-button', function(){
+
+        var id = Number($(this).closest('.feed-card').data('id'));
+
+        var contentJson = JSON.stringify({
+            'sharing': true,
+            'postid': id
+        });
+
+        $.post({
+            url: '/carlos/functions.php',
+            data: {
+                'func': 'post',
+                'content': contentJson
+            },
+            success: function(data){
+                alert(data);
+            }
+        });
+    });
 });

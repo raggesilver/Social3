@@ -71,7 +71,8 @@ function makePost() {
     var contentObj = JSON.stringify({
         'contentType': contentType,
         'content': content,
-        'media': files
+        'media': files,
+        'sharing': false
     });
 
     // alert(contentObj);
@@ -85,6 +86,7 @@ function makePost() {
         beforeSend: function(){
             $('.publishButton').html('<i style="color:white" class="fa fa-circle-o-notch fa-spin fa-fw"></i>');
         },
+        contentType: "application/x-www-form-urlencoded;charset=UTF-8",
         success: function(data) {
             if (data == 'OK') {
                 location.reload();
@@ -116,6 +118,8 @@ function generateFeed() {
                 var id = post.id;
                 var liked = post.liked;
                 var likes = post.likes;
+                var isShared = post.isShared;
+                var originalPublisher = post.originalPublisher;
 
                 var type = contentObj.contentType;
                 var content = contentObj.content;
@@ -127,16 +131,26 @@ function generateFeed() {
                 var div = document.createElement('div');
                 $(div).addClass('feed-card');
                 $(div).append('<img class="post-profpic profpic" src="' + url + '">');
-                $(div).append('<a class="profile-link">@' + publisher + '</a>');
+                if(isShared) {
+                    $(div).append('<a class="profile-link">@' + publisher + '</a><span class="profile-span"> &nbsp;shared&nbsp;</span>' + '<a class="profile-link">@' + originalPublisher + '</a><span class="profile-span">\'s</span><span class="profile-span">&nbsp;post</span>');
+                } else {
+                    $(div).append('<a class="profile-link">@' + publisher + '</a>');
+                }
                 $(div).append('<p> - ' + postdate + '</p>');
                 $(div).append('<div class="clear"></div>');
-                $(div).append('<p class="content">' + content + '</p>');
+
+                var p = document.createElement('p');
+                $(p).addClass('content');
+                if(content.length <= 40 && attatchments.length == 0) $(p).addClass('big-font');
+                $(p).html(content);
+                // $(div).append('<p class="content">' + content + '</p>');
+                $(div).append(p);
                 if(attatchments.length > 0) {
                     for (var src of attatchments) {
                         $(div).append('<img src="/carlos/posts_res/' + src + '" class="content-img">');
                     }
                 }
-                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i> <span class="post-likes"></span></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i> <span class="post-likes"></span></button></td><td><button class="img-button share-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
                 $(div).data('id', id);
                 $('.feed').append(div);
                 if(liked) $(div).find('.like-btn').addClass('liked');
@@ -145,6 +159,19 @@ function generateFeed() {
         },
         error: function(err) {
             alert(err);
+        }
+    });
+}
+
+function searchUser() {
+    $.post({
+        url: '/carlos/functions.php',
+        data: 'func=search&search=' + $('#searchBar').val(),
+        success: function(data) {
+            var json = JSON.parse(data);
+            for (var user of json) {
+                alert(user.username);
+            }
         }
     });
 }
@@ -212,6 +239,11 @@ $(function() {
         if ((!container.is(e.target) && container.has(e.target).length === 0) && (!ex.is(e.target) && ex.has(e.target).length === 0)) {
             $('.write-box').removeClass('focused');
         }
+    });
+
+    $('.search-form').on('submit', function(e){
+        e.preventDefault();
+        searchUser();
     });
 
 });

@@ -1,4 +1,4 @@
-var profile, username, fullname, name, surname, totalPosts;
+var profile, username, fullname, name, surname, totalPosts, isAdded = false;
 
 function getParameterByName(name) {
     var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
@@ -40,6 +40,21 @@ function getProfileInfo() {
             name = data.fullname.split(' ')[0];
             surname = data.fullname.split(' ')[data.fullname.split(' ').length - 1];
             totalPosts = data.totalPosts;
+
+            var isMe = data.isMe;
+
+
+            if(isMe === false) {
+                $('table.self-profile').hide();
+                isAdded = data.isAdded;
+                if(isAdded === true) {
+                    $('.add-friend-button').html('<i class="fa fa-user-times" aria-hidden="true"></i>');
+                    $('.add-friend-button').attr('title', 'Remove Friend');
+                    $('.add-friend-button').addClass('remove-friend');
+                }
+            } else {
+                $('table.visit-profile').hide();
+            }
 
             setProfileInfo();
             generateFeed();
@@ -85,7 +100,7 @@ function generateFeed() {
                         $(div).append('<img src="/carlos/posts_res/' + src + '" class="content-img">');
                     }
                 }
-                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i><span class="post-likes"></span></button></td><td><button class="img-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
+                $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i><span class="post-likes"></span></button></td><td><button class="img-button share-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
                 $(div).data('id', id);
                 $('.feed').append(div);
                 if(liked) $(div).find('.like-btn').addClass('liked');
@@ -98,8 +113,21 @@ function generateFeed() {
     });
 }
 
+function addFriend(){
+    $.post({
+        url: '/carlos/functions.php',
+        data: 'func=toggleFriendship&friend=' + username,
+        success: function(data){alert(data); location.reload();},
+        error: function(err){alert('error: ' + err);}
+    });
+}
+
 $(function(){
     profile = getParameterByName('profile');
     getProfileInfo();
     // alert(profile);
+
+    $(document).on('click', '.add-friend-button', function(){
+        addFriend();
+    });
 });

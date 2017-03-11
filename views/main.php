@@ -44,4 +44,8 @@
             </td>
         </tr>
     </table>
+
+    <button class="img-button full-close-btn">
+        <i class="fa fa-close" aria-hidden="true"></i>
+    </button>
 </div>

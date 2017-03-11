@@ -1,0 +1,14 @@
+@media only screen and (max-width: 500px) {
+    .side-menu {
+        display: block;
+        width: 80%;
+        height: auto;
+        margin: 0 auto;
+    }
+
+    .side-menu-prof-container p, .side-menu-prof-container h3, .side-menu-prof-container a  {
+        text-align: center;
+        padding: 0;
+    }
+
+}
