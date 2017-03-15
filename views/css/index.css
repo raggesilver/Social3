@@ -1,71 +1,145 @@
 * {
-  outline: none;
-  font-family: 'Roboto', sans-serif;
-  box-sizing: border-box;
-  color: #232323;
+    outline: none;
+    font-family: 'Roboto', sans-serif;
+    box-sizing: border-box;
+    color: #232323;
 }
 
-html, body {min-height: 100% !important; height: 100%; padding: 0; margin: 0;}
+html, body {
+    min-height: 100% !important;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
 
 .page {
-  min-height: 100%;
-  height: 100%;
-
-  padding: 0;
+    min-height: 100%;
+    height: 100%;
+    padding: 0;
 }
 
 .page div.login {
-  min-height: 100%;
-  height: 100%;
-
-  border-left: 1px solid lightgrey;
+    min-height: 100%;
+    height: 100%;
+    border-left: 1px solid lightgrey;
 }
 
 .centerer {
-  display: table;
+    display: table;
 }
 
 .centerer .content {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
 }
 
-.full-size {width: 100%; height: 100%;}
+.full-size {
+    width: 100%;
+    height: 100%;
+}
 
 .login-form input:not([type="submit"]) {
-  width: 80%;
-  margin: 0 auto;
-  margin-bottom: 10px;
-  padding: 10px;
-  border: none;
-  background: white;
-  box-shadow: 0 0 .1cm #232323;
+    width: 80%;
+    margin: 0 auto;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: none;
+    background: white;
+    box-shadow: 0 0 .1cm #232323;
 }
 
 .login-form input[type="submit"] {
-  width: 50%;
-  margin: 0 auto;
-  padding: 10px;
-  background: #232323;
-  color: white;
-  border: none;
+    width: 50%;
+    margin: 0 auto;
+    padding: 10px;
+    background: #232323;
+    color: white;
+    border: none;
 }
 
 .login-form a {
-  display: block;
-  color: rgb(232, 28, 79);
+    display: block;
+    color: rgb(232, 28, 79);
 }
 
 .banner-intro {
-  background-image: url(../res/bg-1.jpg);
+    background-image: url(../res/bg-1.jpg);
 }
 
-.desc {height: 100%; margin: 0; padding: 10px; background: url(../res/bg-1.jpg);}
+.desc {
+    height: 100%;
+    margin: 0;
+    padding: 10px;
+    /*background-image: -webkit-linear-gradient(bottom, #04837B, #01A7A3);
+    background-image: -o-linear-gradient(bottom, #04837B, #01A7A3);
+    background-image: linear-gradient(to bottom, #04837B, #01A7A3);*/
+    background: url(../res/wallpaper-tumblr-23.jpg);
+    overflow-y: auto;
+}
+
+.desc h1, .desc h2, .desc h3, .desc p, .desc i {
+    font-weight: 300;
+    color: whitesmoke;
+}
+
+.desc h1, .desc h2, .desc h3 {
+    margin-top: 30px;
+}
+
+.desc {
+    font-size: large;
+    font-weight: 300;
+}
+
+.desc div {text-align: center;}
+
+.desc div:last-child {
+    margin-bottom: 50px;
+}
+
+.desc i {
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+}
+
+.desc h1 {
+    display: block;
+    text-align: center;
+}
 
 @media only screen and (max-width: 500px) {
-    .desc {width: 100%; height: 100%; padding:10px;}
-    .login {width: 100%;}
-    .banner-intro {padding:0; overflow: hidden;}
-    body {overflow-y: auto;}
+    .desc {
+        width: 100%;
+        height: 100%;
+        padding: 10px;
+    }
+    .login {
+        width: 100%;
+        display: none;
+    }
+    .banner-intro {
+        padding: 0;
+        overflow: hidden;
+    }
+    body {
+        overflow-y: auto;
+    }
+
+    .page {text-align: center;}
+
+    .back-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: transparent;
+        border: none;
+    }
+}
+
+@media only screen and (min-width: 501px) {
+    .back-btn {
+        display: none;
+    }
 }

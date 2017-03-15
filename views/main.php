@@ -49,3 +49,12 @@
         <i class="fa fa-close" aria-hidden="true"></i>
     </button>
 </div>
+
+<div class="search-full">
+    <input type="text">
+    <button class="img-btn search-return-button"><i class="fa fa-angle-left" aria-hidden="true"></i></button>
+    <button class="img-btn do-search-button"><i class="fa fa-search" aria-hidden="true"></i></button>
+    <ul class="result-container">
+
+    </ul>
+</div>

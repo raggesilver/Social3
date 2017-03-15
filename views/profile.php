@@ -14,9 +14,10 @@
             </table>
             <table class="self-profile">
                 <tr>
-                    <td><button class="img-button" title="Edit Profile"><i class="fa fa-pencil" aria-hidden="true"></i></button></td>
+                    <td><button class="img-button edit-profile" title="Edit Profile"><i class="fa fa-pencil" aria-hidden="true"></i></button></td>
                     <td><button class="img-button" title="User Media"><i class="fa fa-camera" aria-hidden="true"></i></button></td>
                     <td><button class="img-button" title="User Info"><i class="fa fa-info-circle" aria-hidden="true"></i></button></td>
+                    <input type="file" class="userUpdateInput" style="display: none;">
                 </tr>
             </table>
         </div>
@@ -41,3 +42,12 @@
 </div>
 
 <link rel="stylesheet" href="/carlos/views/css/profile.css">
+
+<div class="search-full">
+    <input type="text">
+    <button class="img-btn search-return-button"><i class="fa fa-angle-left" aria-hidden="true"></i></button>
+    <button class="img-btn do-search-button"><i class="fa fa-search" aria-hidden="true"></i></button>
+    <ul class="result-container">
+
+    </ul>
+</div>

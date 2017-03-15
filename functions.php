@@ -110,7 +110,7 @@
 
             $totalPosts = (int) $qr->num_rows;
 
-            $arr = array("username" => $info['username'], "fullname" => $info['fullname'], "totalPosts" => $totalPosts);
+            $arr = array("username" => $info['username'], "fullname" => $info['fullname'], "totalPosts" => $totalPosts, "profpic" => $info['profpic']);
             echo json_encode($arr);
         } else {
             echo 'not found';
@@ -145,7 +145,9 @@
 
             $postContent = (array) json_decode($post['content']);
 
-            $originalPublisher = $post['publisher'];
+            $originalPublisher = $post['originalPublisher'];
+
+            if($originalPublisher == null) $originalPublisher = $post['publisher'];
 
             $newContentObj = array('contentType' => $postContent['contentType'], 'content' => $postContent['content'], 'attatchments' => $postContent['attatchments']);
 
@@ -173,7 +175,7 @@
 
         $query = mysqli_query($conn, $queryString);
 
-        $ans = ($query) ? 'OK id:' . $_POST['postid'] : 'FAIL ' . mysqli_error($conn) . mysqli_real_escape_string($conn, json_encode($newContentObj));
+        $ans = ($query) ? 'OK' . $_POST['postid'] : 'FAIL ' . mysqli_error($conn) . mysqli_real_escape_string($conn, json_encode($newContentObj));
 
         echo $ans;
 
@@ -208,8 +210,10 @@
                     $liked = true;
                 }
 
+                $qr = mysqli_query($conn, "SELECT profpic FROM users WHERE username='" . $row['publisher'] . "'");
+                $qrArr = mysqli_fetch_array($qr);
 
-                $arr[] = array("publisher" => $row['publisher'], "isShared" => ($row['originalPublisher'] != null), "originalPublisher" => $row['originalPublisher'], "content" => utf8_decode($row['content']), "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked);
+                $arr[] = array("publisher" => $row['publisher'], "isShared" => ($row['originalPublisher'] != null), "originalPublisher" => $row['originalPublisher'], "content" => utf8_decode($row['content']), "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked, "profpic" => $qrArr['profpic']);
             }
 
             echo json_encode($arr);
@@ -245,7 +249,10 @@
                     $liked = true;
                 }
 
-                $arr[] = array("publisher" => $row['publisher'], "isShared" => ($row['originalPublisher'] != null), "originalPublisher" => $row['originalPublisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked);
+                $qr = mysqli_query($conn, "SELECT profpic FROM users WHERE username='" . $row['publisher'] . "'");
+                $qrArr = mysqli_fetch_array($qr);
+
+                $arr[] = array("publisher" => $row['publisher'], "isShared" => ($row['originalPublisher'] != null), "originalPublisher" => $row['originalPublisher'], "content" => $row['content'], "postdate" => $row['postdate'], "likes" => $row['likes'], "id" => $row['id'], "liked" => $liked, "profpic" => $qrArr['profpic']);
             }
 
             echo json_encode($arr);
@@ -364,9 +371,9 @@
 
         $search = $_POST['search'];
 
-        $query = mysqli_query($conn, "SELECT * FROM users WHERE username LIKE _utf8'%" . $search . "%'");
-
         $arr = array();
+
+        $query = mysqli_query($conn, "SELECT * FROM users WHERE username LIKE _utf8'%" . $search . "%' OR fullname LIKE _utf8'%" . $search . "%'");
 
         while($row = mysqli_fetch_array($query)) {
             $tmp = array("username" => $row['username'], "fullname" => $row['fullname'], "profpic" => $row['profpic']);
@@ -374,6 +381,25 @@
         }
 
         echo json_encode($arr);
+
+        break;
+
+    case 'updateProfpic':
+
+        checkCookie();
+
+        $username = $_COOKIE['username'];
+        $contentObj = (array) json_decode($_POST['content']);
+
+        $img = $contentObj['profpic'];
+        $url = "/carlos/posts_res/" . base64ToImage($img);
+
+        $query = mysqli_query($conn, "UPDATE users SET profpic='$url' WHERE username='$username'");
+        if($query) {
+            echo 'OK:' . $img;
+        } else {
+            echo 'FAIL: ' . mysqli_error($conn);
+        }
 
         break;
 

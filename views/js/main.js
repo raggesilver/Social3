@@ -1,10 +1,17 @@
 var username, name, surname, fullname, selfpic, totalPosts;
 
+var posting = false;
+
 function UrlExists(url) {
     var http = new XMLHttpRequest();
     http.open('HEAD', url, false);
     http.send();
     return http.status != 404;
+}
+
+function isURL(str) {
+    var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+   return regexp.test(str);
 }
 
 function setUserInfo() {
@@ -14,7 +21,9 @@ function setUserInfo() {
     $('.side-menu-username').attr('href', '/carlos/?profile=' + username);
     $('.side-menu-totalposts').text(totalPosts + ' posts');
 
-    var url = (UrlExists('/carlos/users/' + username + '/profpic-small.png')) ? '/carlos/users/' + username + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
+    var smalled = selfpic.split('.');
+
+    var url = (UrlExists(smalled[0] + '-small' + smalled[1])) ? smalled[0] + '-small' + smalled[1] : selfpic;
 
     selfpic = url;
 
@@ -33,6 +42,7 @@ function getUserInfo() {
             name = data.fullname.split(' ')[0];
             surname = data.fullname.split(' ')[data.fullname.split(' ').length - 1];
             totalPosts = data.totalPosts;
+            selfpic = data.profpic;
 
             setUserInfo();
             generateFeed();
@@ -52,9 +62,11 @@ function makePost() {
 
     if (!(/\S/.test(content))) return;
 
+    posting = true;
+
     var mediaCount = $('.attatchFileInput').get(0).files.length;
 
-    if(mediaCount == 1) {
+    if (mediaCount == 1) {
         contentType = 'media';
     } else if (mediaCount > 1) {
         contentType = 'gallery'
@@ -62,8 +74,8 @@ function makePost() {
 
     var files = [];
 
-    if(mediaCount > 0) {
-        $('.preview-box span .thumb').each(function(index){
+    if (mediaCount > 0) {
+        $('.preview-box span .thumb').each(function(index) {
             files.push($(this).attr('src'));
         });
     }
@@ -83,7 +95,7 @@ function makePost() {
             'func': 'post',
             'content': contentObj
         },
-        beforeSend: function(){
+        beforeSend: function() {
             $('.publishButton').html('<i style="color:white" class="fa fa-circle-o-notch fa-spin fa-fw"></i>');
         },
         contentType: "application/x-www-form-urlencoded;charset=UTF-8",
@@ -126,26 +138,37 @@ function generateFeed() {
 
                 var attatchments = contentObj.attatchments;
 
-                var url = (UrlExists('/carlos/users/' + publisher + '/profpic-small.png')) ? '/carlos/users/' + publisher + '/profpic-small.png' : '/carlos/views/res/default-user.jpg';
+                var profpic = post.profpic;
 
                 var div = document.createElement('div');
                 $(div).addClass('feed-card');
-                $(div).append('<img class="post-profpic profpic" src="' + url + '">');
-                if(isShared) {
+                $(div).append('<img class="post-profpic profpic" src="' + profpic + '">');
+                if (isShared) {
                     $(div).append('<a class="profile-link">@' + publisher + '</a><span class="profile-span"> &nbsp;shared&nbsp;</span>' + '<a class="profile-link">@' + originalPublisher + '</a><span class="profile-span">\'s</span><span class="profile-span">&nbsp;post</span>');
                 } else {
                     $(div).append('<a class="profile-link">@' + publisher + '</a>');
                 }
                 $(div).append('<p> - ' + postdate + '</p>');
+                $(div).append('<button class="img-button post-control"><i class="fa fa-caret-down" aria-hidden="true"></i></button>');
                 $(div).append('<div class="clear"></div>');
 
                 var p = document.createElement('p');
                 $(p).addClass('content');
-                if(content.length <= 40 && attatchments.length == 0) $(p).addClass('big-font');
-                $(p).html(content);
+                if (content.length <= 40 && attatchments.length == 0) $(p).addClass('big-font');
+
+                var newContent = '';
+                var contentArr = content.split(' ');
+
+                for (var word of contentArr) {
+                    if(isURL(word)) {
+                        newContent += '<a class="content-link" href="' + word + '" target="_blank">' + word + '</a>&nbsp;';
+                    } else newContent += word + '&nbsp;';
+                }
+
+                $(p).html(newContent);
                 // $(div).append('<p class="content">' + content + '</p>');
                 $(div).append(p);
-                if(attatchments.length > 0) {
+                if (attatchments.length > 0) {
                     for (var src of attatchments) {
                         $(div).append('<img src="/carlos/posts_res/' + src + '" class="content-img">');
                     }
@@ -153,7 +176,7 @@ function generateFeed() {
                 $(div).append('<table><tr><td><button class="img-button like-btn"><i class="fa fa-heart" aria-hidden="true"></i> <span class="post-likes"></span></button></td><td><button class="img-button share-button"><i class="fa fa-mail-forward" aria-hidden="true"></i></button></td><td><button class="img-button"><i class="fa fa-comment" aria-hidden="true"></i></button></td></tr></table>');
                 $(div).data('id', id);
                 $('.feed').append(div);
-                if(liked) $(div).find('.like-btn').addClass('liked');
+                if (liked) $(div).find('.like-btn').addClass('liked');
                 $(div).find('.post-likes').html((likes > 0) ? likes : '');
             }
         },
@@ -181,6 +204,7 @@ $(function() {
     getUserInfo();
 
     $(document).on('click', '.publishButton', function() {
+        if(posting) return;
         console.log('publish');
         makePost();
     });
@@ -219,19 +243,19 @@ $(function() {
     });
 
     $(document).on('input change keyup paste', '.write-box textarea', function() {
-        if ($(this).val().length <= 40) {
+        if ($(this).val().length <= 50) {
             $(this).addClass('big-font');
         } else {
             $(this).removeClass('big-font');
         }
     });
 
-    $(document).on('focus', '.write-box textarea', function(){
+    $(document).on('focus', '.write-box textarea', function() {
         $('.write-box').addClass('focused');
     });
 
-    $(document).on('click', function (e) {
-        if(!$('.write-box').hasClass('focused')) return;
+    $(document).on('click', function(e) {
+        if (!$('.write-box').hasClass('focused')) return;
         var container = $('.write-box');
 
         var ex = $('.img-full');
@@ -241,7 +265,7 @@ $(function() {
         }
     });
 
-    $('.search-form').on('submit', function(e){
+    $('.search-form').on('submit', function(e) {
         e.preventDefault();
         searchUser();
     });
